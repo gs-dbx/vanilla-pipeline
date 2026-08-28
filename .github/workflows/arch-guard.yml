@@ -1,0 +1,35 @@
+name: arch-guard
+
+on:
+  # Runs automatically on every pull request touching pipeline code
+  pull_request:
+    paths:
+      - "pipelines/**"
+      - "databricks.yml"
+      - "arch-contract.yaml"
+
+  # Also runnable manually from the GitHub Actions tab (Actions → arch-guard → Run workflow)
+  # Useful for testing without opening a PR.
+  workflow_dispatch:
+    inputs:
+      advisory:
+        description: "Run in advisory mode (non-blocking)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+  checks: write
+
+jobs:
+  arch-guard:
+    uses: your-org/arch-guard/.github/workflows/arch-guard-callable.yml@main
+    with:
+      contract: arch-contract.yaml
+      advisory: ${{ github.event_name == 'workflow_dispatch' && inputs.advisory || true }}
+    secrets:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+      DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}

@@ -1,0 +1,37 @@
+bundle:
+  name: vanilla-pipeline
+
+targets:
+  dev:
+    mode: development
+    workspace:
+      host: ${var.databricks_host}
+  prod:
+    workspace:
+      host: ${var.databricks_host}
+
+resources:
+  pipelines:
+    plp_bronze_events_ingest:
+      name: plp_bronze_events_ingest
+      catalog: dev_analytics
+      target: bronze
+      libraries:
+        - notebook:
+            path: ./pipelines/ingest.py
+
+    plp_silver_events_transform:
+      name: plp_silver_events_transform
+      catalog: dev_analytics
+      target: silver
+      libraries:
+        - notebook:
+            path: ./pipelines/transform.py
+
+    plp_gold_events_serve:
+      name: plp_gold_events_serve
+      catalog: dev_analytics
+      target: gold
+      libraries:
+        - notebook:
+            path: ./pipelines/serve.py

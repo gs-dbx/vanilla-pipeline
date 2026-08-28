@@ -1,0 +1,87 @@
+# arch-contract.yaml
+#
+# This file is the single source of truth for what your pipelines are
+# and are not allowed to do. Every change here is a reviewed pull request.
+# arch-guard reads this file on every PR and enforces it automatically.
+#
+# To change a rule: edit this file and open a PR. The change takes effect
+# on the next PR that touches pipeline code.
+
+version: 1
+
+# ── Sanctioned catalogs ───────────────────────────────────────────────────
+# Only these catalogs may be targeted by pipelines.
+# Add a new environment here when you provision it.
+sanctioned_catalogs:
+  - name: dev_analytics
+    env: dev
+  - name: staging_analytics
+    env: staging
+  - name: prod_analytics
+    env: prod
+
+# ── External sources ──────────────────────────────────────────────────────
+# Bronze pipelines may only ingest from sources listed here.
+external_sources:
+  - name: kafka_events
+    type: kafka
+  - name: s3_landing_zone
+    type: cloud_storage
+
+# ── Schema layout ─────────────────────────────────────────────────────────
+schemas:
+  required: [bronze, silver, gold]
+  tier_map:
+    bronze: bronze
+    silver: silver
+    gold: gold
+
+# ── Medallion flow rules ──────────────────────────────────────────────────
+# Read as: "a pipeline writing to THIS tier may read from THESE tiers."
+# Violations here are errors — they represent data quality bypasses.
+tiering:
+  bronze:
+    may_read_from: [external]
+    may_write_to: [bronze]
+  silver:
+    may_read_from: [bronze]
+    may_write_to: [silver]
+  gold:
+    may_read_from: [silver]
+    may_write_to: [gold]
+    serving: true
+
+# ── Naming conventions ────────────────────────────────────────────────────
+# severity: error  → blocks the PR in v3, annotates in v1
+# severity: warning → always advisory
+#
+# To tighten a pattern: change the regex and open a PR.
+# To add a new rule: add a key here and implement it in arch_guard/rules/naming.py.
+naming:
+  tables:
+    pattern: "^[a-z][a-z0-9_]+$"
+    severity: error
+  pipelines:
+    pattern: "^plp_(bronze|silver|gold)_[a-z0-9_]+$"
+    severity: error
+  jobs:
+    pattern: "^job_[a-z0-9_]+$"
+    severity: warning
+  bronze_table_prefix:
+    pattern: "^raw_"
+    severity: warning
+
+# ── Required governance tags ──────────────────────────────────────────────
+# Every table must carry these properties. Enforcement is advisory in v1.
+required_tags:
+  tables: [owner, cost_center]
+  pipelines: [owner]
+
+# ── Override policy ───────────────────────────────────────────────────────
+# Active in v3 when enforcement is enabled. In v1 this section is
+# informational — it documents the intended override mechanism.
+overrides:
+  mechanism: pr_label
+  label: arch-override-approved
+  authorized_teams: [data-platform-admins]
+  require_reason: true
