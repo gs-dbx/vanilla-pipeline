@@ -5,6 +5,9 @@ on:
   pull_request:
     paths:
       - "pipelines/**"
+      - "jobs/**"
+      - "notebooks/**"
+      - "**/*.sql"
       - "databricks.yml"
       - "arch-contract.yaml"
 
@@ -33,3 +36,4 @@ jobs:
       DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
       DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
       DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+      FM_SERVING_ENDPOINT: ${{ secrets.FM_SERVING_ENDPOINT }}
