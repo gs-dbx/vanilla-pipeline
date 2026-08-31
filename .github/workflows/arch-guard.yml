@@ -25,7 +25,7 @@ permissions:
 
 jobs:
   arch-guard:
-    uses: greg-skinner_data/arch-guard/.github/workflows/arch-guard-callable.yml@main
+    uses: gs-dbx/arch-guard/.github/workflows/arch-guard-callable.yml@main
     with:
       contract: arch-contract.yaml
       advisory: ${{ github.event_name == 'workflow_dispatch' && inputs.advisory || true }}
