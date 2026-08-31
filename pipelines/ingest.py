@@ -20,7 +20,7 @@ def raw_events():
 
 
 @dlt.table(
-    name="RawUsers",          # <-- naming violation: CamelCase, not snake_case
+    name="raw_users",          # <-- naming violation: CamelCase, not snake_case
     schema="bronze",
     comment="Raw user records from S3 landing zone",
     table_properties={"owner": "platform", "cost_center": "eng"},
