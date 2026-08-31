@@ -1,7 +1,6 @@
 name: arch-guard
 
 on:
-  # Runs automatically on every pull request touching pipeline code
   pull_request:
     paths:
       - "pipelines/**"
@@ -10,9 +9,6 @@ on:
       - "**/*.sql"
       - "databricks.yml"
       - "arch-contract.yaml"
-
-  # Also runnable manually from the GitHub Actions tab (Actions → arch-guard → Run workflow)
-  # Useful for testing without opening a PR.
   workflow_dispatch:
     inputs:
       advisory:
@@ -20,11 +16,13 @@ on:
         type: boolean
         default: true
 
+# id-token: write is required for GitHub OIDC auth to Databricks
 permissions:
   contents: read
   pull-requests: write
   security-events: write
   checks: write
+  id-token: write
 
 jobs:
   arch-guard:
@@ -32,6 +30,19 @@ jobs:
     with:
       contract: arch-contract.yaml
       advisory: ${{ github.event_name == 'workflow_dispatch' && inputs.advisory || true }}
+
+      # Runner: swap this to your org's protected runner label when deploying
+      # to a customer environment. The runner's egress IP must be in the
+      # workspace IP ACL for FM review and UC grounding to work.
+      runner: ubuntu-latest   # TODO: replace with protected runner label
+
+      # Auth type:
+      #   client-credentials — current default; needs CLIENT_ID + CLIENT_SECRET secrets
+      #   github-oidc        — production target; no stored secret, but requires the SP
+      #                        to have a federated credential configured in the Databricks
+      #                        account console (accounts.azuredatabricks.net)
+      databricks_auth_type: client-credentials
+
     secrets:
       DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
       DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
