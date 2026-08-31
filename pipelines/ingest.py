@@ -49,3 +49,13 @@ def bad_shortcut():
 )
 def BadCatalogTable():
     return dlt.read_stream("kafka_events")
+
+
+@dlt.table(
+    name="__BadCatalogTable",
+    schema="bronze",
+    catalog="legacy_warehouse",
+    table_properties={"owner": "platform", "cost_center": "eng"},
+)
+def BadCatalogTable():
+    return dlt.read_stream("kafka_events")
