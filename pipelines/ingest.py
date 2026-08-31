@@ -30,3 +30,12 @@ def RawUsers():
         dlt.read_stream("s3_landing_zone")
         .select("user_id", "email", "created_at")
     )
+
+
+@dlt.table(
+    name="bad_shortcut",
+    schema="gold",
+    table_properties={"owner": "analytics", "cost_center": "eng"},
+)
+def bad_shortcut():
+    return dlt.read("raw_events")   # bronze → gold: illegal    

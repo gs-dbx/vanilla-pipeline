@@ -1,0 +1,27 @@
+# .arch-waivers.yaml
+#
+# Each entry acknowledges a specific arch-guard finding and suppresses it.
+# A waiver must be a reviewed pull request — this file IS the audit trail.
+#
+# Fields:
+#   rule_id     (required) The finding's rule_id exactly as arch-guard reports it.
+#   file        (required) Repo-relative path.
+#   line        (optional) Specific line. Omit to waive all instances in the file.
+#   reason      (required) Plain English justification. Be specific.
+#   approved_by (required) GitHub team or username who approved this waiver.
+#   expires     (optional) ISO date. After this date the waiver is ignored and
+#               the finding becomes active again. Use this for temporary suppressions.
+#
+# Example (remove the leading # to activate):
+#
+# waivers:
+#   - rule_id: dlt.quality.no_expect
+#     file: pipelines/ingest.py
+#     line: 22
+#     reason: "Legacy table migrated from JDBC — adding expect constraints requires
+#              a coordinated cutover with the downstream silver pipeline. Tracked in
+#              JIRA DATA-4821, target: 2026-11-01."
+#     approved_by: data-platform-admins
+#     expires: 2026-11-01
+
+waivers: []
