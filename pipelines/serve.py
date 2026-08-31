@@ -15,3 +15,12 @@ def events_daily():
         .groupBy("date")
         .agg(F.count("*").alias("event_count"))
     )
+
+
+@dlt.table(
+    name="debug_shortcut",
+    schema="gold",
+    table_properties={"owner": "analytics", "cost_center": "eng"},
+)
+def debug_shortcut():
+    return dlt.read("raw_events")   # bronze → gold: illegal
