@@ -39,3 +39,13 @@ def RawUsers():
 )
 def bad_shortcut():
     return dlt.read("raw_events")   # bronze → gold: illegal    
+
+
+@dlt.table(
+    name="BadCatalogTable",
+    schema="bronze",
+    catalog="legacy_warehouse",
+    table_properties={"owner": "platform", "cost_center": "eng"},
+)
+def BadCatalogTable():
+    return dlt.read_stream("kafka_events")
