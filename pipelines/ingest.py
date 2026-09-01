@@ -55,6 +55,16 @@ def BadCatalogTable():
 
 
 @dlt.table(
+    name="raw_missing_dataset_schema",
+    catalog="csb_dev_events_stage",
+    comment="Deliberate missing-schema fixture for administrator guidance",
+    table_properties={"owner": "platform", "cost_center": "eng"},
+)
+def raw_missing_dataset_schema():
+    return dlt.read_stream("kafka_events")
+
+
+@dlt.table(
     name="__BadCatalogTable",
     schema="events",
     catalog="legacy_warehouse",
