@@ -34,7 +34,7 @@ jobs:
       #   Simple:      runner: "ubuntu-latest"
       #   Group+label: runner: '{"group":"emu-runners","labels":["linux"]}'
       # The runner's egress IP must be in the workspace IP ACL for FM review to work.
-      runner: ubuntu-latest     # TODO: replace with protected EMU runner label
+      runner: self-hosted
 
       # GitHub environment — scopes the OIDC subject claim.
       # The Databricks SP federated credential must be configured to match:
