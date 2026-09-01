@@ -29,6 +29,7 @@ jobs:
     with:
       contract: arch-contract.yaml
       advisory: ${{ github.event_name == 'workflow_dispatch' && inputs.advisory || true }}
+      runner: self-hosted
       databricks_host: ${{ vars.DATABRICKS_HOST }}
       databricks_client_id: ${{ vars.DATABRICKS_CLIENT_ID }}
       databricks_auth_type: client-credentials
