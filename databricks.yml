@@ -6,12 +6,6 @@ targets:
     mode: development
     workspace:
       host: ${var.databricks_host}
-  test:
-    workspace:
-      host: ${var.databricks_host}
-  preprod:
-    workspace:
-      host: ${var.databricks_host}
   prod:
     workspace:
       host: ${var.databricks_host}
@@ -23,16 +17,30 @@ resources:
       catalog: csb_dev_events_stage
       target: events
       libraries:
-        - notebook: {path: ./pipelines/ingest.py}
+        - notebook:
+            path: ./pipelines/ingest.py
+
     plp_silver_events_transform:
       name: plp_silver_events_transform
       catalog: csb_dev_events_cleansed
       target: events
       libraries:
-        - notebook: {path: ./pipelines/transform.py}
+        - notebook:
+            path: ./pipelines/transform.py
+
     plp_gold_events_serve:
       name: plp_gold_events_serve
       catalog: csb_dev_analytics
       target: events
       libraries:
-        - notebook: {path: ./pipelines/serve.py}
+        - notebook:
+            path: ./pipelines/serve.py
+
+  jobs:
+    RefreshEventsBadly:
+      name: RefreshEventsBadly
+      tasks:
+        - task_key: unsafe_publish
+          spark_python_task:
+            python_file: ./jobs/unsafe_publish.py
+            parameters: ["--target-catalog", "legacy_warehouse"]
