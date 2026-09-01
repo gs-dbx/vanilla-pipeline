@@ -6,6 +6,12 @@ targets:
     mode: development
     workspace:
       host: ${var.databricks_host}
+  test:
+    workspace:
+      host: ${var.databricks_host}
+  preprod:
+    workspace:
+      host: ${var.databricks_host}
   prod:
     workspace:
       host: ${var.databricks_host}
@@ -14,24 +20,19 @@ resources:
   pipelines:
     plp_bronze_events_ingest:
       name: plp_bronze_events_ingest
-      catalog: dev_analytics
-      target: bronze
+      catalog: csb_dev_events_stage
+      target: events
       libraries:
-        - notebook:
-            path: ./pipelines/ingest.py
-
+        - notebook: {path: ./pipelines/ingest.py}
     plp_silver_events_transform:
       name: plp_silver_events_transform
-      catalog: dev_analytics
-      target: silver
+      catalog: csb_dev_events_cleansed
+      target: events
       libraries:
-        - notebook:
-            path: ./pipelines/transform.py
-
+        - notebook: {path: ./pipelines/transform.py}
     plp_gold_events_serve:
       name: plp_gold_events_serve
-      catalog: dev_analytics
-      target: gold
+      catalog: csb_dev_analytics
+      target: events
       libraries:
-        - notebook:
-            path: ./pipelines/serve.py
+        - notebook: {path: ./pipelines/serve.py}
