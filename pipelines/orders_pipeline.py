@@ -1,28 +1,25 @@
 import dlt
 from pyspark.sql import functions as F
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession  # used below for spark.read — intentional lineage break demo
 
 
-# No @dlt.expect on this bronze table — bad data propagates silently into silver
+# No @dlt.expect on this bronze table — bad data propagates silently into silver.
+# Also missing comment= so this table is undiscoverable in Unity Catalog.
 @dlt.table(
     name="raw_order_events",
     schema="bronze",
     table_properties={"owner": "platform", "cost_center": "eng"},
 )
 def raw_order_events():
-    # Hardcoded path — should be a pipeline parameter
     return (
-        spark.readStream.format("cloudFiles")
-        .option("cloudFiles.format", "json")
-        .option("cloudFiles.schemaLocation", "/mnt/landing/orders/schema")
-        .load("/mnt/landing/orders/raw")
+        dlt.read_stream("kafka_events")
         .select(
             F.col("order_id"),
             F.col("customer_id"),
             F.col("amount").cast("double"),
             F.col("status"),
             F.col("event_time").cast("timestamp"),
-            # Doing heavy transformation in bronze — this is silver's job
+            # Heavy business logic in bronze — classification belongs in silver
             F.when(F.col("amount") > 1000, "high_value")
              .when(F.col("amount") > 100, "mid_value")
              .otherwise("low_value").alias("value_tier"),
@@ -32,19 +29,18 @@ def raw_order_events():
     )
 
 
-# Missing comment= — table undiscoverable in Unity Catalog
-# Also no @dlt.expect despite reading from an unvalidated bronze source
+# Missing comment= — table undiscoverable in Unity Catalog.
+# No @dlt.expect — null refund amounts will corrupt silver aggregates silently.
+# spark.read() instead of dlt.read() breaks DLT lineage graph.
 @dlt.table(
     name="raw_order_refunds",
     schema="bronze",
     table_properties={"owner": "platform", "cost_center": "eng"},
 )
 def raw_order_refunds():
-    # spark.read() instead of dlt.read() — breaks DLT lineage
     spark = SparkSession.getActiveSession()
     return (
-        spark.read.format("delta")
-        .load("/mnt/landing/refunds/delta")
+        spark.read.table("dev_analytics.bronze.external_refunds")
         .select("order_id", "refund_amount", "refund_date")
     )
 
