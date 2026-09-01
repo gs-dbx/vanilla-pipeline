@@ -9,22 +9,66 @@ from pyspark.sql import functions as F
     comment="Raw event stream from Kafka",
     table_properties={"owner": "platform", "cost_center": "eng", "dataset_name": "events"},
 )
-@dlt.expect_or_drop("valid_event_id", "event_id IS NOT NULL")
 def raw_events():
-    return dlt.read_stream("kafka_events").select(
-        F.col("key").cast("string").alias("event_id"),
-        F.col("value").cast("string").alias("payload"),
-        F.col("timestamp").alias("ingested_at"),
+    return (
+        dlt.read_stream("kafka_events")
+        .select(
+            F.col("key").cast("string").alias("event_id"),
+            F.col("value").cast("string").alias("payload"),
+            F.col("timestamp").alias("ingested_at"),
+        )
     )
 
 
 @dlt.table(
-    name="raw_users",
+    name="raw_users",          # <-- naming violation: CamelCase, not snake_case
     schema="events",
     catalog="csb_dev_events_stage",
-    comment="Raw user records from the landing zone",
-    table_properties={"owner": "platform", "cost_center": "eng", "dataset_name": "events"},
+    comment="Raw user records from S3 landing zone",
+    table_properties={"owner": "platform", "cost_center": "eng", "dataset_name": "wrong_dataset"},
 )
-@dlt.expect_or_drop("valid_user_id", "user_id IS NOT NULL")
-def raw_users():
-    return dlt.read_stream("s3_landing_zone").select("user_id", "email", "created_at")
+def RawUsers():
+    return (
+        dlt.read_stream("s3_landing_zone")
+        .select("user_id", "email", "created_at")
+    )
+
+
+@dlt.table(
+    name="bad_shortcut",
+    schema="events",
+    catalog="csb_dev_analytics",
+    table_properties={"owner": "analytics", "cost_center": "eng"},
+)
+def bad_shortcut():
+    return dlt.read("raw_events")   # bronze → gold: illegal    
+
+
+@dlt.table(
+    name="BadCatalogTable",
+    schema="unapproved_dataset",
+    catalog="legacy_warehouse",
+    table_properties={"owner": "platform", "cost_center": "eng"},
+)
+def BadCatalogTable():
+    return dlt.read_stream("kafka_events")
+
+
+@dlt.table(
+    name="raw_missing_dataset_schema",
+    catalog="csb_dev_events_stage",
+    comment="Deliberate missing-schema fixture for administrator guidance",
+    table_properties={"owner": "platform", "cost_center": "eng"},
+)
+def raw_missing_dataset_schema():
+    return dlt.read_stream("kafka_events")
+
+
+@dlt.table(
+    name="__BadCatalogTable",
+    schema="events",
+    catalog="legacy_warehouse",
+    table_properties={"owner": "platform", "cost_center": "eng"},
+)
+def BadCatalogTable():
+    return dlt.read_stream("kafka_events")
