@@ -20,7 +20,6 @@ on:
 permissions:
   contents: read
   pull-requests: write
-  security-events: write
   checks: write
 
 jobs:
@@ -29,7 +28,9 @@ jobs:
     with:
       contract: arch-contract.yaml
       advisory: ${{ github.event_name == 'workflow_dispatch' && inputs.advisory || true }}
+      databricks_host: ${{ vars.DATABRICKS_HOST }}
+      databricks_client_id: ${{ vars.DATABRICKS_CLIENT_ID }}
+      databricks_auth_type: client-credentials
+      fm_endpoint: ${{ vars.FM_SERVING_ENDPOINT }}
     secrets:
-      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
-      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
       DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
