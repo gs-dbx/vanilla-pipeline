@@ -1,15 +1,14 @@
 name: arch-guard
 
 on:
-  # Runs automatically on every pull request touching pipeline code
   pull_request:
     paths:
       - "pipelines/**"
+      - "jobs/**"
+      - "notebooks/**"
+      - "**/*.sql"
       - "databricks.yml"
       - "arch-contract.yaml"
-
-  # Also runnable manually from the GitHub Actions tab (Actions → arch-guard → Run workflow)
-  # Useful for testing without opening a PR.
   workflow_dispatch:
     inputs:
       advisory:
@@ -22,6 +21,7 @@ permissions:
   pull-requests: write
   security-events: write
   checks: write
+  id-token: write             # required for github-oidc auth type
 
 jobs:
   arch-guard:
@@ -29,7 +29,29 @@ jobs:
     with:
       contract: arch-contract.yaml
       advisory: ${{ github.event_name == 'workflow_dispatch' && inputs.advisory || true }}
+
+      # Runner: string label OR JSON group+labels object.
+      #   Simple:      runner: "ubuntu-latest"
+      #   Group+label: runner: '{"group":"emu-runners","labels":["linux"]}'
+      # The runner's egress IP must be in the workspace IP ACL for FM review to work.
+      runner: self-hosted
+
+      # GitHub environment — scopes the OIDC subject claim.
+      # The Databricks SP federated credential must be configured to match:
+      #   repo:gs-dbx/vanilla-pipeline:environment:<this value>
+      environment: "demo"         # TODO: set up this environment in GitHub repo settings
+
+      # Non-sensitive Databricks config — stored as repo vars, not secrets
+      databricks_host: ${{ vars.DATABRICKS_HOST }}
+      databricks_client_id: ${{ vars.DATABRICKS_CLIENT_ID }}
+
+      # Auth type:
+      #   github-oidc        — production target; no stored secret
+      #   client-credentials — interim; needs DATABRICKS_CLIENT_SECRET secret
+      databricks_auth_type: client-credentials
+
+      # FM endpoint / AI Gateway model name
+      fm_endpoint: ${{ vars.FM_SERVING_ENDPOINT }}
+
     secrets:
-      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
-      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
       DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}

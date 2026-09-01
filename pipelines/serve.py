@@ -51,3 +51,4 @@ def debug_shortcut():
 )
 def debug_shortcut():
     return dlt.read("raw_events")   # bronze → gold: illegal
+# arch-guard demo
