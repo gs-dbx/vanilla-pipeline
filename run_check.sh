@@ -1,3 +1,5 @@
+Test
+
 #!/usr/bin/env bash
 # run_check.sh — run arch-guard locally against this repo.
 #
